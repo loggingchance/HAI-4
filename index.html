@@ -1,0 +1,345 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Session 4 · FBS High Agency Intensive</title>
+  <style>
+    :root {
+      --forest:      #1a3326;
+      --forest-mid:  #2e5c42;
+      --forest-lite: #4a8060;
+      --cream:       #f5f0e8;
+      --parchment:   #ede8dc;
+      --ink:         #1e1e1e;
+      --ink-mid:     #3a3a3a;
+      --ink-light:   #7a7060;
+      --rule:        #c8bfaf;
+      --radius:      8px;
+    }
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+    body {
+      font-family: 'Georgia', 'Times New Roman', serif;
+      background: var(--cream);
+      color: var(--ink);
+      min-height: 100vh;
+    }
+
+    /* PIN GATE */
+    #gate {
+      position: fixed; inset: 0;
+      background: var(--forest);
+      display: flex; align-items: center; justify-content: center;
+      z-index: 999;
+    }
+    #gate.hidden { display: none; }
+    .gate-inner {
+      width: min(340px, 90vw);
+      text-align: center;
+      padding: 2.5rem 2rem;
+    }
+    .gate-mark {
+      display: flex; align-items: center; gap: 0.75rem;
+      justify-content: center; margin-bottom: 1.75rem;
+    }
+    .gate-mark-line { flex: 1; height: 1px; background: rgba(255,255,255,0.25); }
+    .gate-mark-text {
+      font-size: 0.65rem; letter-spacing: 0.18em; text-transform: uppercase;
+      color: rgba(255,255,255,0.55); white-space: nowrap;
+    }
+    .gate-title {
+      font-size: 2.4rem; font-weight: normal; line-height: 1.15;
+      color: #fff; margin-bottom: 0.4rem;
+    }
+    .gate-sub {
+      font-size: 0.78rem; letter-spacing: 0.14em; text-transform: uppercase;
+      color: rgba(255,255,255,0.5); margin-bottom: 1.2rem;
+    }
+    .gate-tree { font-size: 1.4rem; letter-spacing: 0.2rem; margin-bottom: 1.6rem; opacity: 0.85; }
+    .pin-label {
+      display: block; font-size: 0.72rem; letter-spacing: 0.12em;
+      text-transform: uppercase; color: rgba(255,255,255,0.5); margin-bottom: 0.6rem;
+    }
+    .pin-input {
+      display: block; width: 140px; margin: 0 auto 1rem;
+      background: rgba(255,255,255,0.08); border: 1px solid rgba(255,255,255,0.2);
+      border-radius: var(--radius); color: #fff; font-size: 1.6rem;
+      letter-spacing: 0.35em; text-align: center; padding: 0.55rem 0.5rem; outline: none;
+    }
+    .pin-input:focus { border-color: rgba(255,255,255,0.5); }
+    .pin-btn {
+      display: inline-block; background: var(--forest-lite); color: #fff;
+      border: none; border-radius: var(--radius); font-size: 0.8rem;
+      letter-spacing: 0.1em; text-transform: uppercase; padding: 0.65rem 2rem;
+      cursor: pointer; transition: background 0.2s;
+    }
+    .pin-btn:hover { background: #5a9970; }
+    .pin-error {
+      margin-top: 0.75rem; font-size: 0.75rem; color: #e07070;
+      opacity: 0; transition: opacity 0.2s;
+    }
+    .pin-error.show { opacity: 1; }
+    .gate-footer {
+      margin-top: 2rem; font-size: 0.62rem; letter-spacing: 0.13em;
+      text-transform: uppercase; color: rgba(255,255,255,0.28);
+    }
+
+    /* PAGE */
+    #page { display: none; }
+    #page.visible { display: block; }
+
+    /* HEADER BAND */
+    .site-band {
+      background: var(--forest); padding: 0.6rem 1.5rem;
+      display: flex; align-items: center; justify-content: space-between;
+    }
+    .band-logo {
+      font-size: 0.78rem; letter-spacing: 0.08em; text-transform: uppercase;
+      color: rgba(255,255,255,0.75); text-decoration: none;
+    }
+    .band-logo:hover { color: #fff; }
+    .band-session-tag {
+      font-size: 0.68rem; letter-spacing: 0.12em;
+      text-transform: uppercase; color: rgba(255,255,255,0.45);
+    }
+
+    /* CONTENT */
+    #content { max-width: 720px; margin: 0 auto; padding: 0 1.25rem 3rem; }
+
+    /* HERO */
+    .session-hero {
+      padding: 2.5rem 0 2rem;
+      border-bottom: 1px solid var(--rule);
+      margin-bottom: 1.75rem;
+    }
+    .hero-eyebrow {
+      font-size: 0.7rem; letter-spacing: 0.16em; text-transform: uppercase;
+      color: var(--ink-light); margin-bottom: 0.6rem;
+    }
+    .hero-title {
+      font-size: clamp(2rem, 6vw, 3rem); font-weight: normal;
+      line-height: 1.15; color: var(--forest); margin-bottom: 0.6rem;
+    }
+    .hero-sub {
+      font-size: 1rem; color: var(--ink-mid); font-style: italic; line-height: 1.5;
+    }
+
+    /* INFOGRAPHIC */
+    .infographic-wrap {
+      margin: 0 0 1.75rem; border-radius: var(--radius);
+      overflow: hidden; background: var(--parchment);
+    }
+    .infographic-wrap img { display: block; width: 100%; height: auto; }
+    .infographic-caption {
+      font-size: 0.68rem; letter-spacing: 0.1em; text-transform: uppercase;
+      color: var(--ink-light); text-align: center; padding: 0.55rem 1rem;
+    }
+
+    /* MEETING BANNER */
+    .meeting-banner {
+      display: flex; align-items: center; justify-content: space-between;
+      background: var(--forest); color: #fff; border-radius: var(--radius);
+      padding: 1.1rem 1.4rem; text-decoration: none; margin-bottom: 2rem;
+      transition: background 0.2s;
+    }
+    .meeting-banner:hover { background: var(--forest-mid); }
+    .meeting-banner-left { flex: 1; }
+    .meeting-banner-label {
+      font-size: 0.62rem; letter-spacing: 0.16em; text-transform: uppercase;
+      color: rgba(255,255,255,0.5); margin-bottom: 0.25rem;
+    }
+    .meeting-banner-title {
+      font-size: 1.2rem; font-weight: normal; color: #fff; margin-bottom: 0.2rem;
+    }
+    .meeting-banner-time { font-size: 0.75rem; color: rgba(255,255,255,0.6); }
+    .meeting-banner-action {
+      font-size: 0.72rem; letter-spacing: 0.1em; text-transform: uppercase;
+      color: rgba(255,255,255,0.7); white-space: nowrap; margin-left: 1rem;
+    }
+
+    /* SECTIONS */
+    .section { margin-bottom: 2rem; }
+    .section-label {
+      font-size: 0.65rem; letter-spacing: 0.2em; text-transform: uppercase;
+      color: var(--forest-mid); border-bottom: 1px solid var(--rule);
+      padding-bottom: 0.4rem; margin-bottom: 0.9rem;
+    }
+    .section-intro {
+      font-size: 0.95rem; line-height: 1.65; color: var(--ink-mid); margin-bottom: 1rem;
+    }
+
+    /* CARDS */
+    .card {
+      background: var(--parchment); border: 1px solid var(--rule);
+      border-radius: var(--radius); padding: 1.1rem 1.2rem;
+      margin-bottom: 0.75rem; display: flex; align-items: flex-start; gap: 1rem;
+    }
+    .card-icon { font-size: 1.3rem; flex-shrink: 0; margin-top: 0.1rem; }
+    .card-body { flex: 1; }
+    .card-title {
+      font-size: 1rem; font-weight: normal; color: var(--ink); margin-bottom: 0.25rem;
+    }
+    .card-desc { font-size: 0.82rem; color: var(--ink-light); line-height: 1.5; }
+    .card-coming {
+      display: inline-block; margin-top: 0.5rem; font-size: 0.68rem;
+      letter-spacing: 0.12em; text-transform: uppercase;
+      color: var(--rule); font-style: italic;
+    }
+
+    /* FOOTER */
+    .site-footer { background: var(--forest); padding: 1.5rem; margin-top: 2rem; }
+    .footer-inner { max-width: 720px; margin: 0 auto; padding: 0 1.25rem; }
+    .footer-contact { display: flex; align-items: flex-start; gap: 1rem; }
+    .footer-avatar {
+      width: 40px; height: 40px; border-radius: 50%;
+      background: var(--forest-mid); flex-shrink: 0;
+      display: flex; align-items: center; justify-content: center;
+      font-size: 0.85rem; color: rgba(255,255,255,0.6); letter-spacing: 0.05em;
+    }
+    .contact-name { font-size: 0.95rem; color: rgba(255,255,255,0.85); margin-right: 0.5rem; }
+    .contact-title { font-size: 0.75rem; color: rgba(255,255,255,0.4); letter-spacing: 0.06em; }
+    .contact-links { margin-top: 0.3rem; display: flex; gap: 1.25rem; flex-wrap: wrap; }
+    .contact-links a { font-size: 0.78rem; color: var(--forest-lite); text-decoration: none; }
+    .contact-links a:hover { color: #7ac09a; }
+    .footer-note {
+      margin-top: 0.75rem; font-size: 0.65rem; letter-spacing: 0.1em;
+      color: rgba(255,255,255,0.2); text-transform: uppercase;
+    }
+  </style>
+</head>
+<body>
+
+<!-- PIN GATE -->
+<div id="gate">
+  <div class="gate-inner">
+    <div class="gate-mark">
+      <span class="gate-mark-line"></span>
+      <span class="gate-mark-text">Forest Business School</span>
+      <span class="gate-mark-line"></span>
+    </div>
+    <h1 class="gate-title">High Agency<br>Intensive</h1>
+    <p class="gate-sub">Session 4</p>
+    <div class="gate-tree">&#127794; &#127794; &#127794; &#127794;</div>
+    <label class="pin-label" for="pinInput">Enter your access code</label>
+    <input class="pin-input" id="pinInput" type="tel" maxlength="4" autocomplete="off"
+           inputmode="numeric" placeholder="&#xB7;&#xB7;&#xB7;&#xB7;">
+    <br>
+    <button class="pin-btn" onclick="checkPin()">Enter</button>
+    <p class="pin-error" id="pinError">Incorrect code &mdash; try again</p>
+    <p class="gate-footer">Northeast Forests LLC &nbsp;&middot;&nbsp; FBS</p>
+  </div>
+</div>
+
+<!-- MAIN PAGE -->
+<div id="page">
+
+  <!-- HEADER BAND -->
+  <div class="site-band">
+    <a class="band-logo" href="https://www.forestenterprise.org" target="_blank" rel="noopener">Forest Business School</a>
+    <span class="band-session-tag">Session 4 of 4</span>
+  </div>
+
+  <div id="content">
+
+    <!-- HERO -->
+    <div class="session-hero">
+      <p class="hero-eyebrow">Session 4 &nbsp;&middot;&nbsp; FBS High Agency Intensive</p>
+      <h1 class="hero-title">The Final Session</h1>
+      <p class="hero-sub">Content coming soon &mdash; check back before we meet</p>
+    </div>
+
+    <!-- INFOGRAPHIC -->
+    <!-- Copy the base64 data URI from the src attribute in session3.html and paste it below -->
+    <div class="infographic-wrap">
+      <img src="PASTE_BASE64_SRC_FROM_SESSION3_HERE"
+           alt="High Agency for Small Businesses — Forest Business School">
+      <p class="infographic-caption">High Agency for Small Businesses &nbsp;&middot;&nbsp; Forest Business School</p>
+    </div>
+
+    <!-- WEEKLY MEETING BANNER -->
+    <a class="meeting-banner" href="https://tinyurl.com/FBS-HAI-26" target="_blank" rel="noopener">
+      <div class="meeting-banner-left">
+        <p class="meeting-banner-label">Weekly Session</p>
+        <p class="meeting-banner-title">Join the Live Discussion</p>
+        <p class="meeting-banner-time">Wednesdays &nbsp;&middot;&nbsp; 7:30 PM EDT</p>
+      </div>
+      <span class="meeting-banner-action">Join Meeting &rarr;</span>
+    </a>
+
+    <!-- BEFORE WE MEET -->
+    <section class="section">
+      <p class="section-label">Before We Meet</p>
+      <p class="section-intro">Materials for Session 4 will be posted here before our final meeting. Check back soon.</p>
+
+      <div class="card">
+        <div class="card-icon">&#128214;</div>
+        <div class="card-body">
+          <p class="card-title">Reading</p>
+          <p class="card-desc">Session reading will be linked here.</p>
+          <span class="card-coming">Coming soon</span>
+        </div>
+      </div>
+
+      <div class="card">
+        <div class="card-icon">&#127911;</div>
+        <div class="card-body">
+          <p class="card-title">Audio</p>
+          <p class="card-desc">Pre-session audio discussion will be posted here.</p>
+          <span class="card-coming">Coming soon</span>
+        </div>
+      </div>
+
+      <div class="card">
+        <div class="card-icon">&#128196;</div>
+        <div class="card-body">
+          <p class="card-title">Session Notes</p>
+          <p class="card-desc">Download link for session notes will appear here.</p>
+          <span class="card-coming">Coming soon</span>
+        </div>
+      </div>
+    </section>
+
+  </div><!-- /content -->
+
+  <!-- FOOTER -->
+  <footer class="site-footer">
+    <div class="footer-inner">
+      <div class="footer-contact">
+        <div class="footer-avatar">SB</div>
+        <div>
+          <span class="contact-name">Steve Bick</span>
+          <span class="contact-title">Ph.D., CF &nbsp;&middot;&nbsp; Director, Forest Business School</span>
+          <div class="contact-links">
+            <a href="mailto:steve@northeastforests.com">steve@northeastforests.com</a>
+            <a href="https://www.forestenterprise.org" target="_blank" rel="noopener">forestenterprise.org</a>
+          </div>
+        </div>
+      </div>
+      <p class="footer-note">Northeast Forests LLC &nbsp;&middot;&nbsp; Forest Business School &nbsp;&middot;&nbsp; High Agency Intensive</p>
+    </div>
+  </footer>
+
+</div><!-- /page -->
+
+<script>
+  const CORRECT_PIN = '1406';
+
+  function checkPin() {
+    const val = document.getElementById('pinInput').value.trim();
+    const err = document.getElementById('pinError');
+    if (val === CORRECT_PIN) {
+      document.getElementById('gate').classList.add('hidden');
+      document.getElementById('page').classList.add('visible');
+    } else {
+      err.classList.add('show');
+      document.getElementById('pinInput').value = '';
+      setTimeout(() => err.classList.remove('show'), 2200);
+    }
+  }
+
+  document.getElementById('pinInput').addEventListener('keydown', function(e) {
+    if (e.key === 'Enter') checkPin();
+  });
+</script>
+</body>
+</html>
